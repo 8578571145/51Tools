@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数码管段码计算器</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3b82f6',
+                        secondary: '#f97316',
+                        dark: '#1e293b',
+                        light: '#f8fafc'
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .transition-all-300 {
+                transition: all 300ms ease-in-out;
+            }
+            .shadow-depth {
+                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            }
+            .bg-gradient-blue {
+                background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            }
+            .hover-scale {
+                transition: transform 0.2s ease-in-out;
+            }
+            .hover-scale:hover {
+                transform: scale(1.02);
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-inter text-dark min-h-screen flex flex-col">
+    <!-- 导航栏 -->
+    <nav class="bg-gradient-blue text-white shadow-lg sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <i class="fa-solid fa-calculator text-2xl"></i>
+                <h1 class="text-xl md:text-2xl font-bold">数码管段码计算器</h1>
+            </div>
+            <div class="hidden md:flex space-x-4">
+                <a href="#" class="hover:text-gray-200 transition-all-300"><i class="fa-solid fa-home mr-1"></i>首页</a>
+                <a href="#" class="hover:text-gray-200 transition-all-300"><i class="fa-solid fa-question-circle mr-1"></i>帮助</a>
+                <a href="#" class="hover:text-gray-200 transition-all-300"><i class="fa-solid fa-code mr-1"></i>API</a>
+            </div>
+            <button class="md:hidden text-xl">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+        </div>
+    </nav>
+
+    <!-- 主要内容 -->
+    <main class="flex-grow container mx-auto px-4 py-8">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- 输入区域 -->
+            <div class="lg:col-span-1">
+                <div class="bg-white rounded-xl shadow-depth p-6 hover-scale">
+                    <h2 class="text-xl font-bold mb-4 flex items-center">
+                        <i class="fa-solid fa-keyboard text-primary mr-2"></i>输入参数
+                    </h2>
+                    <div class="space-y-4">
+                        <div>
+                            <label for="hexCodes" class="block text-sm font-medium text-gray-700 mb-1">0-9的十六进制段码</label>
+                            <textarea id="hexCodes" rows="5" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all-300" placeholder="例如: 0x7B,0x42,0x5D,0x79,0x49,0x6D,0x6F,0x40,0x7F,0x7D"></textarea>
+                            <p class="text-xs text-gray-500 mt-1">请输入10个十六进制值，用逗号分隔</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">有效电平</label>
+                            <div class="flex space-x-4">
+                                <label class="inline-flex items-center">
+                                    <input type="radio" name="activeLevel" value="1" class="form-radio text-primary" checked>
+                                    <span class="ml-2">高电平(1)</span>
+                                </label>
+                                <label class="inline-flex items-center">
+                                    <input type="radio" name="activeLevel" value="0" class="form-radio text-primary">
+                                    <span class="ml-2">低电平(0)</span>
+                                </label>
+                            </div>
+                        </div>
+                        <button id="calculateBtn" class="w-full bg-primary hover:bg-primary/90 text-white font-medium py-2 px-4 rounded-lg transition-all-300 flex items-center justify-center">
+                            <i class="fa-solid fa-calculator mr-2"></i>计算段码映射
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 使用说明 -->
+                <div class="bg-white rounded-xl shadow-depth p-6 mt-6 hover-scale">
+                    <h2 class="text-xl font-bold mb-4 flex items-center">
+                        <i class="fa-solid fa-book text-primary mr-2"></i>使用说明
+                    </h2>
+                    <ul class="space-y-2 text-sm text-gray-700">
+                        <li class="flex items-start">
+                            <i class="fa-solid fa-check-circle text-green-500 mt-1 mr-2"></i>
+                            <span>在上方输入框中填入0-9的十六进制段码值</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fa-solid fa-check-circle text-green-500 mt-1 mr-2"></i>
+                            <span>选择数码管的有效电平（高电平或低电平）</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fa-solid fa-check-circle text-green-500 mt-1 mr-2"></i>
+                            <span>点击"计算段码映射"按钮获取结果</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fa-solid fa-check-circle text-green-500 mt-1 mr-2"></i>
+                            <span>结果将显示在右侧面板中</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- 结果区域 -->
+            <div class="lg:col-span-2">
+                <div class="bg-white rounded-xl shadow-depth p-6 hover-scale">
+                    <h2 class="text-xl font-bold mb-4 flex items-center">
+                        <i class="fa-solid fa-table text-primary mr-2"></i>计算结果
+                    </h2>
+
+                    <!-- 结果显示 -->
+                    <div id="resultContainer" class="hidden">
+                        <div class="mb-6">
+                            <h3 class="text-lg font-semibold mb-2">段码映射字符串</h3>
+                            <div class="bg-gray-50 border border-gray-200 rounded-lg p-3 flex items-center">
+                                <span id="segmentMapResult" class="font-mono text-lg"></span>
+                                <button id="copyBtn" class="ml-auto bg-gray-200 hover:bg-gray-300 text-gray-700 p-1 rounded transition-all-300">
+                                    <i class="fa-solid fa-copy"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                            <div>
+                                <h3 class="text-lg font-semibold mb-2">段与bit位对应关系</h3>
+                                <div id="bitMappingResult" class="bg-gray-50 border border-gray-200 rounded-lg p-3 max-h-40 overflow-y-auto">
+                                    <!-- 结果将在这里动态生成 -->
+                                </div>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-semibold mb-2">段码数组</h3>
+                                <div class="bg-gray-50 border border-gray-200 rounded-lg p-3">
+                                    <div>
+                                        <p class="text-sm text-gray-600 mb-1">数字0-9：</p>
+                                        <p id="numCodesResult" class="font-mono text-sm"></p>
+                                    </div>
+                                    <div class="mt-3">
+                                        <p class="text-sm text-gray-600 mb-1">对应的字符：</p>
+                                        <p id="numLabelsResult" class="font-mono text-sm"></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 数码管显示示例 -->
+                        <div>
+                            <h3 class="text-lg font-semibold mb-2">数码管显示示例</h3>
+                            <div class="grid grid-cols-5 gap-2 md:gap-4 justify-items-center">
+                                <!-- 数码管将在这里动态生成 -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 初始提示 -->
+                    <div id="initialPrompt" class="py-10 text-center text-gray-500">
+                        <i class="fa-solid fa-arrow-down text-3xl mb-4 text-gray-400"></i>
+                        <p>请在左侧输入参数并计算结果</p>
+                    </div>
+
+                    <!-- 错误提示 -->
+                    <div id="errorPrompt" class="hidden py-6 px-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+                        <div class="flex items-start">
+                            <i class="fa-solid fa-exclamation-circle mt-1 mr-2"></i>
+                            <div>
+                                <h3 class="font-medium">计算失败</h3>
+                                <p id="errorMessage" class="text-sm mt-1"></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 常见问题 -->
+                <div class="bg-white rounded-xl shadow-depth p-6 mt-6 hover-scale">
+                    <h2 class="text-xl font-bold mb-4 flex items-center">
+                        <i class="fa-solid fa-question-circle text-primary mr-2"></i>常见问题
+                    </h2>
+                    <div class="space-y-4">
+                        <div>
+                            <h3 class="font-semibold text-gray-800">什么是数码管段码映射？</h3>
+                            <p class="text-sm text-gray-600 mt-1">数码管段码映射是指将数码管的各个段（a-g和小数点dp）与微控制器的I/O引脚（bit位）建立对应关系的过程。例如，"e4d5dp2c6g7a1f0b3" 表示段e对应bit4，段d对应bit5，以此类推。</p>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-gray-800">如何确定有效电平？</h3>
+                            <p class="text-sm text-gray-600 mt-1">有效电平取决于数码管的类型：共阳极数码管使用低电平有效（active_level=0），共阴极数码管使用高电平有效（active_level=1）。</p>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-gray-800">段码映射结果有什么用途？</h3>
+                            <p class="text-sm text-gray-600 mt-1">映射结果可用于编写数码管驱动程序，帮助您确定如何通过微控制器的I/O引脚控制数码管的各个段，实现数字和字符的显示。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="bg-dark text-white py-6 mt-8">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-4 md:mb-0">
+                    <div class="flex items-center space-x-2">
+                        <i class="fa-solid fa-calculator"></i>
+                        <span class="font-bold">数码管段码计算器</span>
+                    </div>
+                    <p class="text-sm text-gray-400 mt-1">专业的数码管段码映射工具</p>
+                </div>
+                <div class="flex space-x-6">
+                    <a href="#" class="text-gray-400 hover:text-white transition-all-300">
+                        <i class="fa-brands fa-github text-xl"></i>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-white transition-all-300">
+                        <i class="fa-brands fa-twitter text-xl"></i>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-white transition-all-300">
+                        <i class="fa-brands fa-linkedin text-xl"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="border-t border-gray-700 mt-6 pt-6 text-center text-sm text-gray-400">
+                &copy; 2025 数码管段码计算器 | 保留所有权利
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // 段码映射核心算法
+        function reverseGenerateSegmentMask(hexCodes, activeLevel) {
+            // 解析输入的十六进制段码
+            try {
+                const hexList = hexCodes.split(',').map(h => {
+                    const trimmed = h.trim();
+                    if (!trimmed.startsWith('0x') || trimmed.length !== 4) {
+                        throw new Error(`格式错误: '${trimmed}' 不是有效的十六进制值`);
+                    }
+                    return parseInt(trimmed, 16);
+                });
+
+                if (hexList.length !== 10) {
+                    throw new Error(`必须提供10个十六进制段码（0-9），当前提供了${hexList.length}个`);
+                }
+
+                // 数码管段的标准亮灭定义（数字0-9）
+                const standardSegments = {
+                    0: ['a', 'b', 'c', 'd', 'e', 'f'],
+                    1: ['b', 'c'],
+                    2: ['a', 'b', 'd', 'e', 'g'],
+                    3: ['a', 'b', 'c', 'd', 'g'],
+                    4: ['b', 'c', 'f', 'g'],
+                    5: ['a', 'c', 'd', 'f', 'g'],
+                    6: ['a', 'c', 'd', 'e', 'f', 'g'],
+                    7: ['a', 'b', 'c'],
+                    8: ['a', 'b', 'c', 'd', 'e', 'f', 'g'],
+                    9: ['a', 'b', 'c', 'd', 'f', 'g']
+                };
+
+                // 初始化段到bit位的映射
+                const segmentToBit = {};
+
+                // 分析每个bit位在所有数字中的出现模式
+                const bitPatterns = {};
+                for (let bitPos = 0; bitPos < 8; bitPos++) {
+                    const pattern = [];
+                    for (let digit = 0; digit < 10; digit++) {
+                        pattern.push((hexList[digit] & (1 << bitPos)) ? 1 : 0);
+                    }
+                    bitPatterns[bitPos] = pattern;
+                }
+
+                // 为每个段构建理想模式
+                const idealPatterns = {};
+                for (const seg of ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'dp']) {
+                    const pattern = [];
+                    for (let digit = 0; digit < 10; digit++) {
+                        pattern.push(standardSegments[digit].includes(seg) ? 1 : 0);
+                    }
+                    idealPatterns[seg] = pattern;
+                }
+
+                // 找到最佳匹配
+                const segmentsToMap = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'dp'];
+
+                for (const seg of segmentsToMap) {
+                    let bestBit = null;
+                    let bestSimilarity = -1;
+
+                    for (let bitPos = 0; bitPos < 8; bitPos++) {
+                        if (Object.values(segmentToBit).includes(bitPos)) {
+                            continue; // 该bit已被映射
+                        }
+
+                        // 计算相似度（匹配位数）
+                        let similarity = 0;
+                        for (let i = 0; i < 10; i++) {
+                            if (bitPatterns[bitPos][i] === idealPatterns[seg][i]) {
+                                similarity++;
+                            }
+                        }
+
+                        if (similarity > bestSimilarity) {
+                            bestSimilarity = similarity;
+                            bestBit = bitPos;
+                        }
+                    }
+
+                    if (bestBit !== null && bestSimilarity > 5) { // 设置阈值，确保匹配质量
+                        segmentToBit[seg] = bestBit;
+                    }
+                }
+
+                // 检查是否成功映射所有段
+                const requiredSegments = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'dp'];
+                const missingSegments = requiredSegments.filter(seg => !segmentToBit.hasOwnProperty(seg));
+
+                if (missingSegments.length > 0) {
+                    console.warn(`未能映射所有段，缺少: ${missingSegments.join(', ')}`);
+                    // 尝试通过排除法映射剩余段
+                    for (const seg of missingSegments) {
+                        const availableBits = Array.from({length: 8}, (_, i) => i)
+                            .filter(bit => !Object.values(segmentToBit).includes(bit));
+                        if (availableBits.length > 0) {
+                            segmentToBit[seg] = availableBits[0];
+                            console.log(`自动映射: ${seg} → bit${availableBits[0]}`);
+                        }
+                    }
+                }
+
+                // 生成输出字符串（按bit位升序排列）
+                const sortedSegments = Object.entries(segmentToBit)
+                    .sort((a, b) => a[1] - b[1])
+                    .map(([seg, bit]) => `${seg}${bit}`)
+                    .join('');
+
+                return { segmentMap: sortedSegments, segmentToBit };
+
+            } catch (error) {
+                console.error('段码映射错误:', error);
+                throw error;
+            }
+        }
+
+        // 绘制七段数码管
+        function drawSevenSegment(digit, segmentToBit, container, isActive = true) {
+            const segments = {
+                a: { path: 'M20,10 L80,10 L75,15 L25,15 Z', position: 'top' },
+                b: { path: 'M80,10 L85,25 L85,75 L80,80 L75,75 L75,25 Z', position: 'right-top' },
+                c: { path: 'M80,80 L85,85 L85,135 L80,140 L75,135 L75,85 Z', position: 'right-bottom' },
+                d: { path: 'M20,140 L80,140 L75,135 L25,135 Z', position: 'bottom' },
+                e: { path: 'M10,80 L15,85 L15,135 L10,140 L5,135 L5,85 Z', position: 'left-bottom' },
+                f: { path: 'M10,10 L15,25 L15,75 L10,80 L5,75 L5,25 Z', position: 'left-top' },
+                g: { path: 'M20,75 L75,75 L80,80 L75,85 L25,85 L20,80 Z', position: 'middle' }
+            };
+
+            const digitMap = {
+                '0': ['a', 'b', 'c', 'd', 'e', 'f'],
+                '1': ['b', 'c'],
+                '2': ['a', 'b', 'd', 'e', 'g'],
+                '3': ['a', 'b', 'c', 'd', 'g'],
+                '4': ['b', 'c', 'f', 'g'],
+                '5': ['a', 'c', 'd', 'f', 'g'],
+                '6': ['a', 'c', 'd', 'e', 'f', 'g'],
+                '7': ['a', 'b', 'c'],
+                '8': ['a', 'b', 'c', 'd', 'e', 'f', 'g'],
+                '9': ['a', 'b', 'c', 'd', 'f', 'g']
+            };
+
+            const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            svg.setAttribute('width', '100');
+            svg.setAttribute('height', '160');
+            svg.setAttribute('viewBox', '0 0 100 160');
+
+            // 添加背景
+            const background = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+            background.setAttribute('x', '0');
+            background.setAttribute('y', '0');
+            background.setAttribute('width', '100');
+            background.setAttribute('height', '160');
+            background.setAttribute('fill', '#f0f0f0');
+            background.setAttribute('rx', '5');
+            svg.appendChild(background);
+
+            // 添加段
+            for (const seg in segments) {
+                const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                path.setAttribute('d', segments[seg].path);
+                path.setAttribute('fill', digitMap[digit].includes(seg) ? '#ff3b30' : '#bbbbbb');
+                path.setAttribute('stroke', '#999');
+                path.setAttribute('stroke-width', '1');
+                path.setAttribute('class', `segment segment-${seg} ${digitMap[digit].includes(seg) ? 'active' : 'inactive'}`);
+                svg.appendChild(path);
+            }
+
+            // 添加数字标签
+            const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            text.setAttribute('x', '50');
+            text.setAttribute('y', '150');
+            text.setAttribute('text-anchor', 'middle');
+            text.setAttribute('font-family', 'Arial');
+            text.setAttribute('font-size', '16');
+            text.setAttribute('font-weight', 'bold');
+            text.textContent = digit;
+            svg.appendChild(text);
+
+            // 添加段标签
+            const segLabels = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+            segLabels.setAttribute('font-family', 'Arial');
+            segLabels.setAttribute('font-size', '10');
+            segLabels.setAttribute('fill', '#555');
+
+            for (const seg in segments) {
+                const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                label.setAttribute('x', segments[seg].position.includes('left') ? '15' :
+                                  segments[seg].position.includes('right') ? '85' : '50');
+                label.setAttribute('y', segments[seg].position.includes('top') ? '25' :
+                                  segments[seg].position.includes('bottom') ? '125' :
+                                  segments[seg].position.includes('middle') ? '85' : '75');
+                label.setAttribute('text-anchor', segments[seg].position.includes('left') ? 'start' :
+                                  segments[seg].position.includes('right') ? 'end' : 'middle');
+                label.textContent = `${seg}(${segmentToBit[seg]})`;
+                segLabels.appendChild(label);
+            }
+
+            svg.appendChild(segLabels);
+
+            container.innerHTML = '';
+            container.appendChild(svg);
+
+            // 添加动画效果
+            if (isActive) {
+                setTimeout(() => {
+                    svg.querySelectorAll('.segment.active').forEach(seg => {
+                        seg.setAttribute('fill', '#ff3b30');
+                        seg.setAttribute('transition', 'fill 0.3s ease');
+                    });
+                }, 100);
+            }
+        }
+
+        // 页面交互逻辑
+        document.addEventListener('DOMContentLoaded', function() {
+            const calculateBtn = document.getElementById('calculateBtn');
+            const hexCodesInput = document.getElementById('hexCodes');
+            const resultContainer = document.getElementById('resultContainer');
+            const initialPrompt = document.getElementById('initialPrompt');
+            const errorPrompt = document.getElementById('errorPrompt');
+            const errorMessage = document.getElementById('errorMessage');
+            const segmentMapResult = document.getElementById('segmentMapResult');
+            const bitMappingResult = document.getElementById('bitMappingResult');
+            const numCodesResult = document.getElementById('numCodesResult');
+            const numLabelsResult = document.getElementById('numLabelsResult');
+            const copyBtn = document.getElementById('copyBtn');
+
+            // 默认示例数据
+            hexCodesInput.value = '0x7B,0x42,0x5D,0x79,0x49,0x6D,0x6F,0x40,0x7F,0x7D';
+
+            calculateBtn.addEventListener('click', function() {
+                // 重置UI状态
+                resultContainer.classList.add('hidden');
+                errorPrompt.classList.add('hidden');
+                initialPrompt.classList.add('hidden');
+
+                // 显示加载状态
+                calculateBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i>计算中...';
+                calculateBtn.disabled = true;
+
+                setTimeout(() => {
+                    try {
+                        const hexCodes = hexCodesInput.value;
+                        const activeLevel = document.querySelector('input[name="activeLevel"]:checked').value;
+
+                        // 执行段码映射计算
+                        const { segmentMap, segmentToBit } = reverseGenerateSegmentMask(hexCodes, activeLevel);
+
+                        // 更新结果显示
+                        segmentMapResult.textContent = segmentMap;
+
+                        // 生成段与bit位对应关系
+                        bitMappingResult.innerHTML = '';
+                        const sortedMapping = Object.entries(segmentToBit).sort((a, b) => a[1] - b[1]);
+                        sortedMapping.forEach(([seg, bit]) => {
+                            const div = document.createElement('div');
+                            div.className = 'flex justify-between py-1 border-b border-gray-100 last:border-0';
+                            div.innerHTML = `
+                                <span class="font-mono">段 ${seg}</span>
+                                <span class="font-bold">bit${bit}</span>
+                            `;
+                            bitMappingResult.appendChild(div);
+                        });
+
+                        // 生成数字段码数组
+                        const hexList = hexCodes.split(',').map(h => h.trim());
+                        numCodesResult.textContent = hexList.join(', ');
+                        numLabelsResult.textContent = '0, 1, 2, 3, 4, 5, 6, 7, 8, 9';
+
+                        // 绘制数码管示例
+                        const digitsContainer = resultContainer.querySelector('.grid');
+                        digitsContainer.innerHTML = '';
+
+                        for (let i = 0; i < 10; i++) {
+                            const digitContainer = document.createElement('div');
+                            digitContainer.className = 'bg-white rounded-lg p-3 shadow border border-gray-100';
+                            digitsContainer.appendChild(digitContainer);
+
+                            // 延迟绘制每个数码管，创造动画效果
+                            setTimeout(() => {
+                                drawSevenSegment(i.toString(), segmentToBit, digitContainer);
+                            }, i * 100);
+                        }
+
+                        // 显示结果
+                        resultContainer.classList.remove('hidden');
+
+                    } catch (error) {
+                        // 显示错误信息
+                        errorMessage.textContent = error.message;
+                        errorPrompt.classList.remove('hidden');
+                        console.error('计算错误:', error);
+                    } finally {
+                        // 恢复按钮状态
+                        calculateBtn.innerHTML = '<i class="fa-solid fa-calculator mr-2"></i>计算段码映射';
+                        calculateBtn.disabled = false;
+                    }
+                }, 500); // 模拟计算延迟
+            });
+
+            // 复制结果到剪贴板
+            copyBtn.addEventListener('click', function() {
+                const textToCopy = segmentMapResult.textContent;
+                navigator.clipboard.writeText(textToCopy).then(() => {
+                    // 显示复制成功提示
+                    const originalText = copyBtn.innerHTML;
+                    copyBtn.innerHTML = '<i class="fa-solid fa-check"></i>';
+                    copyBtn.classList.add('bg-green-200', 'text-green-700');
+
+                    setTimeout(() => {
+                        copyBtn.innerHTML = originalText;
+                        copyBtn.classList.remove('bg-green-200', 'text-green-700');
+                    }, 2000);
+                });
+            });
+
+            // 初始动画
+            setTimeout(() => {
+                document.body.classList.add('opacity-100');
+                document.body.classList.remove('opacity-0');
+            }, 100);
+        });
+    </script>
+</body>
+</html>
