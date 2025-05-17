@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数码管段码生成器</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <style>
+        .segment { stroke: #333; stroke-width: 2; fill: #ddd; transition: fill 0.3s ease; }
+        .segment.active { fill: #ff4757; }
+        .digit-container { display: inline-flex; padding: 10px; }
+        .char-group { margin-bottom: 2rem; }
+        .char-group h3 { font-size: 1.25rem; font-weight: bold; margin-bottom: 1rem; }
+        .digit-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 1.5rem;
+        }
+        .digit-card {
+            background-color: #f9fafb;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            text-align: center;
+            transition: transform 0.2s ease;
+            min-height: 260px; /* 增加最小高度 */
+            display: flex;
+            flex-direction: column;
+        }
+        .digit-card:hover { transform: translateY(-5px); }
+        .mask-value { font-family: monospace; }
+        .bin-value { font-family: monospace; font-size: 0.875rem; }
+
+        /* 响应式调整 */
+        @media (max-width: 640px) {
+            .digit-grid {
+                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+                gap: 1rem;
+            }
+            .digit-card {
+                padding: 1rem;
+                min-height: 240px;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans">
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-3xl font-bold text-center text-gray-800 mb-8">数码管段码生成器</h1>
+
+        <div class="bg-white rounded-lg shadow-md p-6 mb-8 transform transition-all duration-300 hover:shadow-lg">
+            <h2 class="text-xl font-bold mb-4 flex items-center">
+                <i class="fa fa-sliders mr-2 text-blue-500"></i>输入参数
+            </h2>
+            <form class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">段码映射字符串</label>
+                    <input type="text" id="segmentMap" class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300" value="e4d5dp2c6g7a1f0b3">
+                    <p class="text-xs text-gray-500 mt-1">格式示例：a1b2c3d4e5f6g7dp0</p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">有效电平</label>
+                    <div class="flex items-center space-x-4">
+                        <input type="radio" id="activeHigh" name="activeLevel" value="1" checked class="form-radio">
+                        <label for="activeHigh" class="text-sm text-gray-700">高电平有效 (1)</label>
+                        <input type="radio" id="activeLow" name="activeLevel" value="0" class="form-radio">
+                        <label for="activeLow" class="text-sm text-gray-700">低电平有效 (0)</label>
+                    </div>
+                </div>
+                <button type="button" id="generateBtn" class="w-full md:w-auto bg-blue-500 text-white font-bold py-2 px-4 rounded-md hover:bg-blue-600 focus:outline-none focus:shadow-outline mt-4 flex items-center justify-center transition-all duration-300">
+                    <i class="fa fa-calculator mr-2"></i>生成段码
+                </button>
+            </form>
+        </div>
+
+        <div id="result" class="bg-white rounded-lg shadow-md p-6 transform transition-all duration-300 hover:shadow-lg">
+            <h2 class="text-xl font-bold mb-4 flex items-center">
+                <i class="fa fa-table mr-2 text-blue-500"></i>生成结果
+            </h2>
+
+            <div class="mb-8">
+                <h3 class="text-lg font-medium mb-4 flex items-center">
+                    <i class="fa fa-television mr-2 text-gray-600"></i>数码管显示示例
+                </h3>
+
+                <div id="digitDisplay" class="space-y-6">
+                    <!-- 数字 -->
+                    <div class="char-group">
+                        <h3 class="flex items-center text-blue-600">
+                            <i class="fa fa-hashtag mr-2"></i>数字 (0-9)
+                        </h3>
+                        <div id="digitsGrid" class="digit-grid"></div>
+                    </div>
+
+                    <!-- 大写字母 -->
+                    <div class="char-group">
+                        <h3 class="flex items-center text-green-600">
+                            <i class="fa fa-font mr-2"></i>大写字母
+                        </h3>
+                        <div id="uppercaseGrid" class="digit-grid"></div>
+                    </div>
+
+                    <!-- 小写字母 -->
+                    <div class="char-group">
+                        <h3 class="flex items-center text-purple-600">
+                            <i class="fa fa-font mr-2"></i>小写字母
+                        </h3>
+                        <div id="lowercaseGrid" class="digit-grid"></div>
+                    </div>
+
+                    <!-- 符号 -->
+                    <div class="char-group">
+                        <h3 class="flex items-center text-amber-600">
+                            <i class="fa fa-keyboard-o mr-2"></i>符号
+                        </h3>
+                        <div id="symbolsGrid" class="digit-grid"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="overflow-x-auto">
+                <h3 class="text-lg font-medium mb-4 flex items-center">
+                    <i class="fa fa-list mr-2 text-gray-600"></i>段码表
+                </h3>
+                <table class="min-w-full bg-white">
+                    <thead>
+                        <tr class="bg-gray-50">
+                            <th class="px-6 py-3 border-b-2 border-gray-300 text-left text-sm font-semibold">字符</th>
+                            <th class="px-6 py-3 border-b-2 border-gray-300 text-left text-sm font-semibold">段码掩码 (Hex)</th>
+                            <th class="px-6 py-3 border-b-2 border-gray-300 text-left text-sm font-semibold">二进制表示</th>
+                        </tr>
+                    </thead>
+                    <tbody id="codeTable"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 扩展段码表，包含更多字符
+        const segmentTable = {
+            // 数字部分
+            0: [1, 1, 1, 1, 1, 1, 0, 0], 1: [0, 1, 1, 0, 0, 0, 0, 0],
+            2: [1, 1, 0, 1, 1, 0, 1, 0], 3: [1, 1, 1, 1, 0, 0, 1, 0],
+            4: [0, 1, 1, 0, 0, 1, 1, 0], 5: [1, 0, 1, 1, 0, 1, 1, 0],
+            6: [1, 0, 1, 1, 1, 1, 1, 0], 7: [1, 1, 1, 0, 0, 0, 0, 0],
+            8: [1, 1, 1, 1, 1, 1, 1, 0], 9: [1, 1, 1, 1, 0, 1, 1, 0],
+
+            // 大写字母
+            'A': [1, 1, 1, 0, 1, 1, 1, 0],
+            'C': [1, 0, 0, 1, 1, 1, 0, 0],
+            'E': [1, 0, 0, 1, 1, 1, 1, 0],
+            'F': [1, 0, 0, 0, 1, 1, 1, 0],
+            'G': [1, 0, 1, 1, 1, 1, 0, 0],
+            'H': [0, 1, 1, 0, 1, 1, 1, 0],
+            'I': [0, 1, 1, 0, 0, 0, 0, 0],
+            'J': [0, 1, 1, 1, 1, 0, 0, 0],
+            'L': [0, 0, 0, 1, 1, 1, 0, 0],
+            'O': [1, 1, 1, 1, 1, 1, 0, 0],
+            'P': [1, 1, 0, 0, 1, 1, 1, 0],
+            'S': [1, 0, 1, 1, 0, 1, 1, 0],
+            'U': [0, 1, 1, 1, 1, 1, 0, 0],
+
+            // 小写字母
+            'b': [0, 0, 1, 1, 1, 1, 1, 0],
+            'c': [0, 0, 0, 1, 1, 0, 1, 0],
+            'd': [0, 1, 1, 1, 1, 0, 1, 0],
+            'g': [1, 1, 1, 1, 0, 1, 1, 0],
+            'h': [0, 0, 1, 0, 1, 1, 1, 0],
+            'i': [0, 0, 1, 0, 0, 0, 0, 0],
+            'l': [0, 1, 1, 0, 0, 0, 0, 0],
+            'n': [0, 0, 1, 0, 1, 0, 1, 0],
+            'o': [0, 0, 1, 1, 1, 0, 1, 0],
+            'q': [1, 1, 1, 0, 0, 1, 1, 0],
+            'r': [0, 0, 0, 0, 1, 0, 1, 0],
+            't': [0, 0, 0, 1, 1, 1, 1, 0],
+            'u': [0, 0, 1, 1, 1, 0, 0, 0],
+        };
+
+        function generateSegmentMask(segmentMap, activeLevel) {
+            // 解析段码映射字符串（如 "a1b2c3d4e5f6g7dp0"）
+            const segmentToBit = {};
+            let i = 0;
+            while (i < segmentMap.length) {
+                // 检查当前字符是否是字母
+                if (/[a-zA-Z]/.test(segmentMap[i])) {
+                    // 如果是 'd'，检查下一个字符是否是 'p'（处理 dp 情况）
+                    if (segmentMap[i] === 'd' && i + 1 < segmentMap.length && segmentMap[i + 1] === 'p') {
+                        const segment = 'dp';
+                        i += 2;  // 跳过 'd' 和 'p'
+
+                        // 读取数字部分
+                        if (i < segmentMap.length && /\d/.test(segmentMap[i])) {
+                            const bit = parseInt(segmentMap[i]);
+                            segmentToBit[segment] = bit;
+                            i += 1;  // 跳过数字
+                        } else {
+                            throw new Error(`Invalid segment map format: missing bit number after '${segment}'`);
+                        }
+                    } else {
+                        const segment = segmentMap[i];
+                        i += 1;  // 跳过字母
+
+                        // 读取数字部分
+                        if (i < segmentMap.length && /\d/.test(segmentMap[i])) {
+                            const bit = parseInt(segmentMap[i]);
+                            segmentToBit[segment] = bit;
+                            i += 1;  // 跳过数字
+                        } else {
+                            throw new Error(`Invalid segment map format: missing bit number after '${segment}'`);
+                        }
+                    }
+                } else {
+                    throw new Error(`Invalid segment map format: expected letter at position ${i}`);
+                }
+            }
+
+            // 生成所有字符的段码掩码
+            const maskDict = {};
+            for (const char in segmentTable) {
+                let mask = 0;
+                for (const [segment, bit] of Object.entries(segmentToBit)) {
+                    // 获取段位置
+                    const segIdx = segment === 'dp' ? 7 : segment.charCodeAt(0) - 'a'.charCodeAt(0);
+
+                    // 获取段状态
+                    const segmentState = segmentTable[char][segIdx];
+
+                    // 计算有效电平
+                    const effectiveState = activeLevel === 1 ? segmentState : 1 - segmentState;
+
+                    // 设置bit位
+                    if (effectiveState) {
+                        mask |= (1 << bit);
+                    }
+                }
+
+                maskDict[char] = mask;
+            }
+
+            return { maskDict, segmentToBit };
+        }
+
+        function renderDigit(digit, mask, segmentToBit) {
+            const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+            svg.setAttribute("width", "80");
+            svg.setAttribute("height", "140"); // 增加高度
+            svg.setAttribute("viewBox", "0 0 80 140");
+
+            const segments = [
+                { name: 'a', bit: segmentToBit.a, path: 'M10 10 L70 10 L65 15 L15 15 Z' },
+                { name: 'b', bit: segmentToBit.b, path: 'M70 10 L75 25 L75 75 L70 80 L65 75 L65 25 Z' },
+                { name: 'c', bit: segmentToBit.c, path: 'M70 80 L75 85 L75 130 L70 135 L65 130 L65 85 Z' },
+                { name: 'd', bit: segmentToBit.d, path: 'M10 135 L70 135 L65 130 L15 130 Z' },
+                { name: 'e', bit: segmentToBit.e, path: 'M10 80 L15 85 L15 130 L10 135 L5 130 L5 85 Z' },
+                { name: 'f', bit: segmentToBit.f, path: 'M10 10 L15 25 L15 75 L10 80 L5 75 L5 25 Z' },
+                { name: 'g', bit: segmentToBit.g, path: 'M20 75 L60 75 L65 80 L60 85 L20 85 L15 80 Z' },
+                { name: 'dp', bit: segmentToBit.dp, path: 'M70 130 A5 5 0 1 0 80 130 A5 5 0 1 0 70 130 Z' } // 调整小数点位置
+            ];
+
+            segments.forEach(seg => {
+                const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                path.setAttribute("d", seg.path);
+                path.setAttribute("class", `segment ${(mask >> seg.bit) & 1 ? 'active' : ''}`);
+                svg.appendChild(path);
+            });
+
+            return svg;
+        }
+
+        document.getElementById('generateBtn').addEventListener('click', () => {
+            const segmentMap = document.getElementById('segmentMap').value;
+            const activeLevel = parseInt(document.querySelector('input[name="activeLevel"]:checked').value);
+
+            try {
+                // 添加加载动画
+                document.getElementById('generateBtn').innerHTML = '<i class="fa fa-spinner fa-spin mr-2"></i>生成中...';
+                document.getElementById('generateBtn').disabled = true;
+
+                setTimeout(() => {
+                    const { maskDict, segmentToBit } = generateSegmentMask(segmentMap, activeLevel);
+                    const digitsGrid = document.getElementById('digitsGrid');
+                    const uppercaseGrid = document.getElementById('uppercaseGrid');
+                    const lowercaseGrid = document.getElementById('lowercaseGrid');
+                    const symbolsGrid = document.getElementById('symbolsGrid');
+                    const codeTable = document.getElementById('codeTable');
+
+                    // 清空旧内容
+                    digitsGrid.innerHTML = '';
+                    uppercaseGrid.innerHTML = '';
+                    lowercaseGrid.innerHTML = '';
+                    symbolsGrid.innerHTML = '';
+                    codeTable.innerHTML = '';
+
+                    // 分类渲染数码管示例
+                    for (const char in maskDict) {
+                        const mask = maskDict[char];
+                        const bin = mask.toString(2).padStart(8, '0').split('').reverse().join('');
+
+                        const digitCard = document.createElement('div');
+                        digitCard.className = 'digit-card';
+
+                        const svgContainer = document.createElement('div');
+                        svgContainer.className = 'flex justify-center mb-2'; // 增加底部间距
+
+                        const svg = renderDigit(char, mask, segmentToBit);
+                        svgContainer.appendChild(svg);
+
+                        const charLabel = document.createElement('div');
+                        charLabel.className = 'font-bold text-lg';
+                        charLabel.textContent = char;
+
+                        const hexValue = document.createElement('div');
+                        hexValue.className = 'mask-value text-sm text-gray-600';
+                        hexValue.textContent = `0x${mask.toString(16).toUpperCase().padStart(2, '0')}`;
+
+                        const binValue = document.createElement('div');
+                        binValue.className = 'bin-value text-xs text-gray-500';
+                        binValue.textContent = bin;
+
+                        digitCard.appendChild(svgContainer);
+                        digitCard.appendChild(charLabel);
+                        digitCard.appendChild(hexValue);
+                        digitCard.appendChild(binValue);
+
+                        // 根据字符类型分类
+                        if (!isNaN(char)) {
+                            digitsGrid.appendChild(digitCard);
+                        } else if (char === char.toUpperCase() && char !== char.toLowerCase()) {
+                            uppercaseGrid.appendChild(digitCard);
+                        } else if (char === char.toLowerCase() && char !== char.toUpperCase()) {
+                            lowercaseGrid.appendChild(digitCard);
+                        } else {
+                            symbolsGrid.appendChild(digitCard);
+                        }
+
+                        // 添加到表格
+                        const tr = document.createElement('tr');
+                        tr.className = 'hover:bg-gray-50 transition-colors duration-200';
+                        tr.innerHTML = `
+                            <td class="px-6 py-3 border-b border-gray-200">${char}</td>
+                            <td class="px-6 py-3 border-b border-gray-200 mask-value">0x${mask.toString(16).toUpperCase().padStart(2, '0')}</td>
+                            <td class="px-6 py-3 border-b border-gray-200 bin-value">${bin}</td>
+                        `;
+                        codeTable.appendChild(tr);
+                    }
+
+                    // 恢复按钮状态
+                    document.getElementById('generateBtn').innerHTML = '<i class="fa fa-calculator mr-2"></i>生成段码';
+                    document.getElementById('generateBtn').disabled = false;
+
+                    // 添加结果显示动画
+                    document.getElementById('result').classList.add('animate-fadeIn');
+
+                }, 500); // 模拟计算延迟
+
+            } catch (error) {
+                alert(`生成失败：${error.message}`);
+                document.getElementById('generateBtn').innerHTML = '<i class="fa fa-calculator mr-2"></i>生成段码';
+                document.getElementById('generateBtn').disabled = false;
+            }
+        });
+
+        // 初始化生成
+        document.getElementById('generateBtn').click();
+    </script>
+</body>
+</html>
