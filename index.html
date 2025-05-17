@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数码管段码工具集</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3B82F6',
+                        secondary: '#10B981',
+                        accent: '#8B5CF6',
+                        dark: '#1E293B',
+                        light: '#F8FAFC'
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .btn-shadow {
+                box-shadow: 0 4px 14px 0 rgba(59, 130, 246, 0.4);
+            }
+            .btn-shadow-secondary {
+                box-shadow: 0 4px 14px 0 rgba(16, 185, 129, 0.4);
+            }
+            .btn-shadow-accent {
+                box-shadow: 0 4px 14px 0 rgba(139, 92, 246, 0.4);
+            }
+            .hover-lift {
+                transition: transform 0.3s ease, box-shadow 0.3s ease;
+            }
+            .hover-lift:hover {
+                transform: translateY(-4px);
+            }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-light to-gray-100 min-h-screen font-inter text-dark">
+    <div class="container mx-auto px-4 py-16 max-w-4xl">
+        <!-- 页面标题 -->
+        <div class="text-center mb-12">
+            <h1 class="text-[clamp(2rem,5vw,3.5rem)] font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent mb-4">
+                数码管段码工具集
+            </h1>
+            <p class="text-gray-600 text-lg max-w-2xl mx-auto">
+                选择适合您的工具，轻松进行数码管段码与对应关系的转换
+            </p>
+        </div>
+
+        <!-- 按钮区域 -->
+        <div class="grid gap-8 md:gap-10">
+            <!-- 按钮1 -->
+            <a href="段码转对应关系(直观版).html" class="group">
+                <div class="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl hover-lift btn-shadow border border-gray-100">
+                    <div class="flex items-start">
+                        <div class="bg-primary/10 p-4 rounded-xl mr-6">
+                            <i class="fa fa-exchange text-2xl text-primary"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-xl font-bold mb-2 group-hover:text-primary transition-colors">段码转对应关系</h2>
+                            <p class="text-gray-600">输入段码值，直观查看对应的数码管显示效果和段码对应关系</p>
+                        </div>
+                    </div>
+                    <div class="mt-6">
+                        <span class="inline-flex items-center px-4 py-2 border border-primary text-primary rounded-lg hover:bg-primary hover:text-white transition-colors">
+                            前往工具 <i class="fa fa-arrow-right ml-2"></i>
+                        </span>
+                    </div>
+                </div>
+            </a>
+
+            <!-- 按钮2 -->
+            <a href="对应关系转段码(直观版).html" class="group">
+                <div class="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl hover-lift btn-shadow-secondary border border-gray-100">
+                    <div class="flex items-start">
+                        <div class="bg-secondary/10 p-4 rounded-xl mr-6">
+                            <i class="fa fa-calculator text-2xl text-secondary"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-xl font-bold mb-2 group-hover:text-secondary transition-colors">对应关系转段码</h2>
+                            <p class="text-gray-600">通过选择数码管各段的状态，生成对应的段码值和二进制表示</p>
+                        </div>
+                    </div>
+                    <div class="mt-6">
+                        <span class="inline-flex items-center px-4 py-2 border border-secondary text-secondary rounded-lg hover:bg-secondary hover:text-white transition-colors">
+                            前往工具 <i class="fa fa-arrow-right ml-2"></i>
+                        </span>
+                    </div>
+                </div>
+            </a>
+
+            <!-- 按钮3 -->
+            <a href="对应关系转段码(懒人版).html" class="group">
+                <div class="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl hover-lift btn-shadow-accent border border-gray-100">
+                    <div class="flex items-start">
+                        <div class="bg-accent/10 p-4 rounded-xl mr-6">
+                            <i class="fa fa-magic text-2xl text-accent"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-xl font-bold mb-2 group-hover:text-accent transition-colors">对应关系转段码(懒人版)</h2>
+                            <p class="text-gray-600">直接输入字符，一键生成对应的段码值，无需手动选择各段状态</p>
+                        </div>
+                    </div>
+                    <div class="mt-6">
+                        <span class="inline-flex items-center px-4 py-2 border border-accent text-accent rounded-lg hover:bg-accent hover:text-white transition-colors">
+                            前往工具 <i class="fa fa-arrow-right ml-2"></i>
+                        </span>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <!-- 页脚 -->
+        <div class="mt-16 text-center text-gray-500 text-sm">
+            <p>© 2025 数码管段码工具集 | 为嵌入式开发人员设计</p>
+            <p class="mt-2">
+                由 <a href="https://github.com/8578571145" target="_blank" rel="noopener noreferrer" class="text-accent hover:underline flex items-center justify-center">
+                    <i class="fa fa-github mr-1"></i> XiBeiLaoHan-
+                </a> 开发
+            </p>
+        </div>
+    </div>
+
+    <!-- 平滑滚动 -->
+    <script>
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+    </script>
+</body>
+</html>
