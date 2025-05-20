@@ -1,207 +1,174 @@
+
 <!DOCTYPE html>
 <html lang="zh">
 <head>
     <meta charset="UTF-8">
     <title>智能段码生成器｜LED Config Pro</title>
-    <style>
-        :root {
-            --primary: #6366f1;
-            --primary-hover: #4f46e5;
-            --background: #f8fafc;
-            --surface: #ffffff;
-            --text-primary: #1e293b;
-            --text-secondary: #64748b;
-        }
-
-        body {
-            font-family: 'Segoe UI', system-ui, sans-serif;
-            background: var(--background);
-            color: var(--text-primary);
-            line-height: 1.6;
-            max-width: 800px;
-            margin: 2rem auto;
-            padding: 0 1rem;
-        }
-
-        .container {
-            background: var(--surface);
-            border-radius: 1rem;
-            box-shadow: 0 12px 24px -6px rgba(0,0,0,0.1);
-            overflow: hidden;
-        }
-
-        .header {
-            background: var(--primary);
-            color: white;
-            padding: 2rem;
-            text-align: center;
-        }
-
-        .header h1 {
-            margin: 0;
-            font-weight: 600;
-            letter-spacing: -0.025em;
-        }
-
-        .config-panel {
-            padding: 2rem;
-        }
-
-        .input-group {
-            margin-bottom: 1.5rem;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: 500;
-            color: var(--text-primary);
-        }
-
-        input[type="text"] {
-            width: 100%;
-            padding: 0.875rem;
-            border: 2px solid #e2e8f0;
-            border-radius: 0.75rem;
-            font-size: 1rem;
-            transition: border-color 0.2s;
-        }
-
-        input[type="text"]:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
-        }
-
-        select {
-            appearance: none;
-            width: 100%;
-            padding: 0.875rem;
-            border: 2px solid #e2e8f0;
-            border-radius: 0.75rem;
-            background: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%231e293b'%3e%3cpath d='M7 10l5 5 5-5z'/%3e%3c/svg%3e")
-                        no-repeat right 1rem center/1.5rem;
-        }
-
-        button {
-            width: 100%;
-            padding: 1rem;
-            background: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 0.75rem;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        button:hover {
-            background: var(--primary-hover);
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px -2px rgba(99, 102, 241, 0.4);
-        }
-
-        .result-section {
-            background: #f1f5f9;
-            padding: 2rem;
-            border-radius: 0 0 1rem 1rem;
-        }
-
-        .code-card {
-            background: var(--surface);
-            border-radius: 0.75rem;
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
-        }
-
-        .code-card h3 {
-            margin: 0 0 1rem;
-            font-size: 1.125rem;
-            color: var(--primary);
-        }
-
-        .code-block {
-            font-family: 'SF Mono', Menlo, monospace;
-            background: #f8fafc;
-            padding: 1rem;
-            border-radius: 0.5rem;
-            overflow-x: auto;
-        }
-
-        .error {
-            color: #dc2626;
-            background: #fee2e2;
-            padding: 1rem;
-            border-radius: 0.5rem;
-            margin-top: 1rem;
-            display: none;
-        }
-
-        @media (max-width: 640px) {
-            body {
-                padding: 1rem;
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#6366f1',
+                        secondary: '#4f46e5',
+                        neutral: '#f8fafc',
+                        surface: '#ffffff',
+                        'text-primary': '#1e293b',
+                        'text-secondary': '#64748b',
+                        error: '#dc2626'
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'card': '0 12px 24px -6px rgba(0,0,0,0.1)',
+                        'btn': '0 4px 12px -2px rgba(99, 102, 241, 0.4)',
+                    }
+                }
             }
-
-            .container {
-                border-radius: 0.75rem;
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
             }
-
-            .header {
-                padding: 1.5rem;
+            .transition-smooth {
+                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+            .hover-lift {
+                transition: transform 0.2s, box-shadow 0.2s;
+            }
+            .hover-lift:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 8px 16px -4px rgba(99, 102, 241, 0.3);
             }
         }
     </style>
 </head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h1>LED Config Pro</h1>
-            <p>智能数码管段码生成解决方案</p>
+<body class="font-inter bg-neutral text-text-primary min-h-screen flex flex-col">
+    <!-- 导航栏 -->
+    <header class="bg-primary text-white shadow-md">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <a href="index.html" class="flex items-center hover-lift">
+                <i class="fa fa-arrow-left mr-2"></i>
+                <span class="font-semibold text-lg">返回首页</span>
+            </a>
+            <h1 class="text-xl font-bold">LED Config Pro</h1>
+            <div class="w-10"></div> <!-- 占位元素，保持标题居中 -->
         </div>
+    </header>
 
-        <div class="config-panel">
-            <div class="input-group">
-                <label for="segment_map">段码映射</label>
-                <input type="text"
-                       id="segment_map"
-                       placeholder="示例: a1b2c3d4e5f6g7dp0"
-                       value="e4d5dp2c6g7a1f0b3">
+    <!-- 主内容区 -->
+    <main class="flex-grow container mx-auto px-4 py-8 max-w-3xl">
+        <div class="bg-surface rounded-2xl shadow-card overflow-hidden transition-smooth">
+            <!-- 页面标题 -->
+            <div class="bg-gradient-to-r from-primary to-secondary text-white p-6">
+                <h2 class="text-[clamp(1.5rem,3vw,2rem)] font-bold mb-1">智能数码管段码生成器</h2>
+                <p class="text-white/80">高效生成数码管显示所需的段码配置</p>
             </div>
 
-            <div class="input-group">
-                <label for="active_level">有效电平</label>
-                <select id="active_level">
-                    <option value="1">高电平有效 (共阴数码管)</option>
-                    <option value="0">低电平有效 (共阳数码管)</option>
-                </select>
+            <!-- 配置面板 -->
+            <div class="p-6">
+                <div class="space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="segment_map" class="block text-sm font-medium text-text-secondary mb-2">段码映射</label>
+                            <div class="relative">
+                                <input type="text"
+                                       id="segment_map"
+                                       placeholder="示例: a1b2c3d4e5f6g7dp0"
+                                       value="e4d5dp2c6g7a1f0b3"
+                                       class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-smooth">
+                                <div class="absolute right-3 top-3 text-text-secondary text-sm">
+                                    <i class="fa fa-info-circle"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label for="active_level" class="block text-sm font-medium text-text-secondary mb-2">有效电平</label>
+                            <div class="relative">
+                                <select id="active_level" class="w-full px-4 py-3 rounded-xl border border-gray-200 appearance-none focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-smooth">
+                                    <option value="1">高电平有效 (共阴数码管)</option>
+                                    <option value="0">低电平有效 (共阳数码管)</option>
+                                </select>
+                                <div class="absolute right-3 top-3 text-text-secondary pointer-events-none">
+                                    <i class="fa fa-chevron-down"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pt-2">
+                        <button onclick="generateCode()" class="w-full bg-primary hover:bg-secondary text-white font-semibold py-3 px-6 rounded-xl transition-smooth hover-lift flex items-center justify-center">
+                            <i class="fa fa-microchip mr-2"></i>
+                            生成段码配置
+                        </button>
+                    </div>
+
+                    <div id="error" class="hidden bg-error/10 text-error p-4 rounded-lg border border-error/20">
+                        <div class="flex items-start">
+                            <i class="fa fa-exclamation-circle mt-1 mr-3 text-error"></i>
+                            <p id="error-message"></p>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <button onclick="generateCode()">生成段码配置</button>
-            <div id="error" class="error"></div>
+            <!-- 结果显示区域 -->
+            <div id="result" class="hidden bg-gray-50 p-6 border-t border-gray-100">
+                <h3 class="text-lg font-semibold mb-4 text-text-primary">生成结果</h3>
+
+                <div class="space-y-6">
+                    <div class="bg-white rounded-xl shadow-sm p-5 transition-smooth hover:shadow-md">
+                        <h4 class="text-primary font-medium mb-3 flex items-center">
+                            <i class="fa fa-number-sign mr-2"></i>
+                            常规数字段码
+                        </h4>
+                        <div class="code-block bg-gray-50 rounded-lg p-4 overflow-x-auto text-sm font-mono">
+                            <pre id="num_codes"></pre>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl shadow-sm p-5 transition-smooth hover:shadow-md">
+                        <h4 class="text-primary font-medium mb-3 flex items-center">
+                            <i class="fa fa-dot-circle-o mr-2"></i>
+                            带小数点段码
+                        </h4>
+                        <div class="code-block bg-gray-50 rounded-lg p-4 overflow-x-auto text-sm font-mono">
+                            <pre id="num_dp_codes"></pre>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl shadow-sm p-5 transition-smooth hover:shadow-md">
+                        <h4 class="text-primary font-medium mb-3 flex items-center">
+                            字母符号段码
+                        </h4>
+                        <div class="code-block bg-gray-50 rounded-lg p-4 overflow-x-auto text-sm font-mono">
+                            <pre id="letter_codes"></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
+    </main>
 
-        <div class="result-section" id="result" style="display: none;">
-            <div class="code-card">
-                <h3>常规数字段码</h3>
-                <div class="code-block" id="num_codes"></div>
-            </div>
-
-            <div class="code-card">
-                <h3>带小数点段码</h3>
-                <div class="code-block" id="num_dp_codes"></div>
-            </div>
-
-            <div class="code-card">
-                <h3>字母符号段码</h3>
-                <div class="code-block" id="letter_codes"></div>
-            </div>
+    <!-- 页脚 -->
+    <footer class="bg-gray-50 border-t border-gray-200 py-6 mt-8">
+        <div class="container mx-auto px-4 text-center text-text-secondary text-sm">
+            <p>Developed with <i class="fa fa-heart text-primary"></i> by
+                <a href="https://github.com/8578571145" target="_blank" class="text-primary hover:text-secondary font-medium transition-smooth">
+                    XiBeiLaoHan-
+                </a>
+            </p>
         </div>
-    </div>
+    </footer>
 
     <script>
-        // 完整的段码表定义
+        // 修正后的完整段码表（所有字符均为8位数组）
         const segmentTable = {
             // 数字部分
             0: [1,1,1,1,1,1,0,0], 1: [0,1,1,0,0,0,0,0],
@@ -210,22 +177,46 @@
             6: [1,0,1,1,1,1,1,0], 7: [1,1,1,0,0,0,0,0],
             8: [1,1,1,1,1,1,1,0], 9: [1,1,1,1,0,1,1,0],
 
-            // 字母和符号
-            'A': [1,1,1,0,1,1,1,0], 'B': [0,0,1,1,1,1,1,0],
-            'C': [1,0,0,1,1,1,0,0], 'D': [0,1,1,1,1,1,1,0],
-            'E': [1,0,0,1,1,1,1,0], 'F': [1,0,0,0,1,1,1,0],
-            'H': [0,1,1,0,1,1,1,0], 'L': [0,0,0,1,1,1,0,0],
-            'P': [1,1,0,0,1,1,1,0], 'U': [0,1,1,1,1,1,0,0],
-            '-': [0,0,0,0,0,0,1,0], 'r': [0,0,0,0,1,0,1,0],
-            'o': [0,0,1,1,1,0,1,0], 'i': [0,0,1,0,0,0,0,0],
-            't': [0,0,0,1,1,1,1,0]
+            // 大写字母
+            'A': [1,1,1,0,1,1,1,0],
+            'C': [1,0,0,1,1,1,0,0],
+            'E': [1,0,0,1,1,1,1,0],
+            'F': [1,0,0,0,1,1,1,0],
+            'G': [1,0,1,1,1,1,0,0],
+            'H': [0,1,1,0,1,1,1,0],
+            'I': [0,1,1,0,0,0,0,0],
+            'J': [0,1,1,1,1,0,0,0],
+            'L': [0,0,0,1,1,1,0,0],
+            'O': [1,1,1,1,1,1,0,0],
+            'P': [1,1,0,0,1,1,1,0],
+            'U': [0,1,1,1,1,1,0,0],
+
+            // 小写字母
+            'b': [0,0,1,1,1,1,1,0],
+            'c': [0,0,0,1,1,0,1,0],
+            'd': [0,1,1,1,1,0,1,0],
+            'g': [1,1,1,1,0,1,1,0],
+            'h': [0,0,1,0,1,1,1,0],
+            'i': [0,0,1,0,0,0,0,0],
+            'l': [0,1,1,0,0,0,0,0],
+            'n': [0,0,1,0,1,0,1,0],
+            'o': [0,0,1,1,1,0,1,0],
+            'q': [1,1,1,0,0,1,1,0],
+            'r': [0,0,0,0,1,0,1,0],
+            't': [0,0,0,1,1,1,1,0],
+            'u': [0,0,1,1,1,0,0,0],
+
+            // 符号
+            '-': [0,0,0,0,0,0,1,0]
         };
 
         function generateCode() {
             const resultDiv = document.getElementById('result');
             const errorDiv = document.getElementById('error');
-            errorDiv.style.display = 'none';
-            resultDiv.style.display = 'none';
+            const errorMessage = document.getElementById('error-message');
+
+            errorDiv.classList.add('hidden');
+            resultDiv.classList.add('hidden');
 
             try {
                 const segmentMap = document.getElementById('segment_map').value;
@@ -236,10 +227,27 @@
 
                 // 显示结果
                 displayResults(maskDict, dpBit);
-                resultDiv.style.display = 'block';
+
+                // 添加显示动画
+                resultDiv.style.opacity = '0';
+                resultDiv.classList.remove('hidden');
+                setTimeout(() => {
+                    resultDiv.style.opacity = '1';
+                    resultDiv.style.transition = 'opacity 0.5s ease-in-out';
+                }, 10);
+
             } catch (error) {
-                errorDiv.textContent = error;
-                errorDiv.style.display = 'block';
+                errorMessage.textContent = error;
+                errorDiv.classList.remove('hidden');
+
+                // 添加错误显示动画
+                errorDiv.style.transform = 'translateY(-10px)';
+                errorDiv.style.opacity = '0';
+                setTimeout(() => {
+                    errorDiv.style.transform = 'translateY(0)';
+                    errorDiv.style.opacity = '1';
+                    errorDiv.style.transition = 'transform 0.3s ease-out, opacity 0.3s ease-out';
+                }, 10);
             }
         }
 
@@ -297,72 +305,52 @@
             return { segmentToBit, dpBit };
         }
 
-        // 显示结果
+        // 显示结果（包含符号）
         function displayResults(maskDict, dpBit) {
-        // 生成数字部分
-        const numbers = Array.from({length: 10}, (_, i) => i);
-        const numLabels = numbers.map(n => `${n}`.padStart(4, ' ')).join(', ');
-        const numCodes = numbers.map(n => `0x${maskDict[n].toString(16).toUpperCase().padStart(2, '0')}`).join(', ');
+            // 生成数字部分
+            const numbers = Array.from({length: 10}, (_, i) => i);
+            const numLabels = numbers.map(n => `${n}`.padStart(4, ' ')).join(', ');
+            const numCodes = numbers.map(n => `0x${maskDict[n].toString(16).toUpperCase().padStart(2, '0')}`).join(', ');
 
-        // 生成带DP位的数字部分
-        const numDpCodes = numbers.map(n => `0x${(maskDict[n] | (1 << dpBit)).toString(16).toUpperCase().padStart(2, '0')}`).join(', ');
+            // 生成带DP位的数字部分
+            const numDpCodes = numbers.map(n => `0x${(maskDict[n] | (1 << dpBit)).toString(16).toUpperCase().padStart(2, '0')}`).join(', ');
 
-        // 生成字母部分
-        const letters = Object.keys(maskDict)
-            .filter(k => typeof k === 'string' && k.length === 1 && /[A-Za-z]/.test(k))
-            .sort();
-        const letterLabels = letters.map(c => `${c}`.padStart(4, ' ')).join(', ');
-        const letterCodes = letters.map(c => `0x${maskDict[c].toString(16).toUpperCase().padStart(2, '0')}`).join(', ');
+            // 生成字母和符号部分（包含符号'-'）
+            const lettersAndSymbols = Object.keys(maskDict)
+                .filter(k => typeof k === 'string' && k.length === 1 && (/\w/.test(k) || k === '-'))
+                .sort((a, b) => a.localeCompare(b));
 
-        // 构建输出内容
-        const buildOutput = (labels, codes) => {
-            return `依次对应的是：[${labels}]\n对应段码数组：[${codes}]`;
-        };
+            const letterLabels = lettersAndSymbols.map(c => `${c}`.padStart(4, ' ')).join(', ');
+            const letterCodes = lettersAndSymbols.map(c => `0x${maskDict[c].toString(16).toUpperCase().padStart(2, '0')}`).join(', ');
 
-        // 更新显示
-        document.getElementById('num_codes').innerHTML =
-            `<pre>${buildOutput(numLabels, numCodes)}</pre>`;
+            // 构建输出内容
+            const buildOutput = (labels, codes) => {
+                return `依次对应的是：[${labels}]\n对应段码数组：[${codes}]`;
+            };
 
-        document.getElementById('num_dp_codes').innerHTML =
-            `<pre>${buildOutput(numLabels, numDpCodes)}</pre>`;
-
-        document.getElementById('letter_codes').innerHTML =
-            `<pre>${buildOutput(letterLabels, letterCodes)}</pre>`;
-    }
+            // 更新显示
+            document.getElementById('num_codes').textContent = buildOutput(numLabels, numCodes);
+            document.getElementById('num_dp_codes').textContent = buildOutput(numLabels, numDpCodes);
+            document.getElementById('letter_codes').textContent = buildOutput(letterLabels, letterCodes);
+        }
 
         // 格式化16进制输出
         function formatHex(value) {
             return '0x' + value.toString(16).toUpperCase().padStart(2, '0');
         }
-        </script>
+
+        // 页面加载动画
+        document.addEventListener('DOMContentLoaded', () => {
+            const container = document.querySelector('.container');
+            container.style.opacity = '0';
+            container.style.transform = 'translateY(20px)';
+
+            setTimeout(() => {
+                container.style.opacity = '1';
+                container.style.transform = 'translateY(0)';
+                container.style.transition = 'opacity 0.5s ease-out, transform 0.5s ease-out';
+            }, 100);
+        });
+    </script>
 </body>
-<!-- 在<body>标签内的最底部添加 -->
-<div class="author-info">
-    <span>Developed with ❤️ by </span>
-    <a href="https://github.com/8578571145" target="_blank" rel="noopener">
-        XiBeiLaoHan-
-    </a>
-</div>
-
-<style>
-/* 添加样式 */
-.author-info {
-    text-align: center;
-    margin: 2rem 0;
-    color: #64748b;
-    font-size: 0.875rem;
-}
-
-.author-info a {
-    color: #6366f1;
-    text-decoration: none;
-    font-weight: 500;
-    transition: color 0.2s;
-}
-
-.author-info a:hover {
-    color: #4f46e5;
-    text-decoration: underline;
-}
-</style>
 </html>
