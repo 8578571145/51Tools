@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -5,8 +6,31 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>数码管段码生成器</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
     <style>
+        /* 自定义工具类 */
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .text-shadow {
+                text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+            }
+            .bg-gradient-blue {
+                background: linear-gradient(135deg, #4F9EFD 0%, #2563EB 100%);
+            }
+            .transition-all-300 {
+                transition: all 300ms ease-in-out;
+            }
+            .hover-scale {
+                transition: transform 0.2s ease-in-out;
+            }
+            .hover-scale:hover {
+                transform: scale(1.03);
+            }
+        }
+
+        /* 数码管样式 */
         .segment { stroke: #333; stroke-width: 2; fill: #ddd; transition: fill 0.3s ease; }
         .segment.active { fill: #ff4757; }
         .digit-container { display: inline-flex; padding: 10px; }
@@ -23,9 +47,10 @@
             padding: 1.5rem;
             text-align: center;
             transition: transform 0.2s ease;
-            min-height: 260px; /* 增加最小高度 */
+            min-height: 260px;
             display: flex;
             flex-direction: column;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
         }
         .digit-card:hover { transform: translateY(-5px); }
         .mask-value { font-family: monospace; }
@@ -45,9 +70,28 @@
     </style>
 </head>
 <body class="bg-gray-100 font-sans">
+    <!-- 现代化导航栏 -->
+    <nav class="bg-gradient-blue text-white shadow-lg sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <a href="index.html" class="flex items-center hover-scale">
+                <i class="fa-solid fa-arrow-left mr-2"></i>
+                <span>返回首页</span>
+            </a>
+            <div class="flex items-center space-x-2">
+                <i class="fa-solid fa-calculator text-2xl"></i>
+                <h1 class="text-xl md:text-2xl font-bold text-shadow">数码管段码生成器</h1>
+            </div>
+            <div class="hidden md:flex space-x-4">
+                <a href="#" class="hover:text-gray-200 transition-all-300"><i class="fa-solid fa-home mr-1"></i>首页</a>
+                <a href="#" class="hover:text-gray-200 transition-all-300"><i class="fa-solid fa-question-circle mr-1"></i>帮助</a>
+                <a href="#" class="hover:text-gray-200 transition-all-300"><i class="fa-solid fa-code mr-1"></i>API</a>
+            </div>
+            <button class="md:hidden text-xl">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+        </div>
+    </nav>
     <div class="container mx-auto px-4 py-8">
-        <h1 class="text-3xl font-bold text-center text-gray-800 mb-8">数码管段码生成器</h1>
-
         <div class="bg-white rounded-lg shadow-md p-6 mb-8 transform transition-all duration-300 hover:shadow-lg">
             <h2 class="text-xl font-bold mb-4 flex items-center">
                 <i class="fa fa-sliders mr-2 text-blue-500"></i>输入参数
